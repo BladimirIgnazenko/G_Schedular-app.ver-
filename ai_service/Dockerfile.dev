@@ -1,0 +1,14 @@
+FROM golang:1.22-alpine
+
+WORKDIR /app
+
+# 에어(Air)라는 툴을 설치해서 코드를 수정하면 서버가 알아서 재시작되게 세팅
+RUN go install github.com/air-verse/air@latest
+
+COPY go.mod ./
+RUN go mod download
+
+COPY . .
+
+# 소스코드가 바뀌는 걸 감시하면서 실시간으로 Go 서버를 실행
+CMD ["air", "-c", ".air.toml"]
