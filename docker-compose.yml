@@ -1,0 +1,45 @@
+version: '3.8'
+
+# 공통으로 사용할 데이터 저장소(볼륨) 정의
+volumes:
+  db_data:
+
+services:
+  # 1. 데이터베이스 서비스 (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  # 2. 백엔드 서비스 (Ruby on Rails)
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    entrypoint: ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+    #command: ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+    volumes:
+      - ./backend:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/g_scheduler_development
+
+  # 3. AI 서비스 (Go)
+  ai_service:
+    build:
+      context: ./ai_service
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./ai_service:/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
