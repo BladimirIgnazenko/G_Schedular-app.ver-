@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  schedule: one
+  request_body: 
+  response_body: 
+  status_code: 1
+  tokens_used: 1
+  error_message: MyText
+
+two:
+  schedule: two
+  request_body: 
+  response_body: 
+  status_code: 1
+  tokens_used: 1
+  error_message: MyText

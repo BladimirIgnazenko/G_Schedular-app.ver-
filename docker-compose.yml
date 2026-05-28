@@ -31,6 +31,8 @@ services:
       - db
     environment:
       DATABASE_URL: postgres://postgres:password@db:5432/g_scheduler_development
+    env_file:
+      - .env
 
   # 3. AI 서비스 (Go)
   ai_service:
