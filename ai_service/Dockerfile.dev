@@ -2,11 +2,9 @@ FROM golang:1.22-alpine
 
 WORKDIR /app
 
-# 인터넷에서 아무것도 다운로드받지 않고 순정 Go 환경만 준비
 COPY go.mod ./
 RUN go mod download
 
 COPY . .
 
-# 에어(Air) 대신 Go 순정 명령어로 즉시 실행
 CMD ["go", "run", "main.go"]
