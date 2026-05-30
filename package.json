@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "axios": "^1.16.1",
+    "react-native-dotenv": "^3.4.11"
+  },
+  "devDependencies": {
+    "@types/react-native-dotenv": "^0.2.2"
+  }
+}
