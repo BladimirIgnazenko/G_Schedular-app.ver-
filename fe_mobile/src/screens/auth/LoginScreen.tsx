@@ -1,188 +1,154 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Platform, Image } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
-// ==========================================
-// 🎨 스타일시트 (디바이스 대응 및 컴파일 에러 방지 최상단 배치)
-// ==========================================
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'space-between', 
-    paddingHorizontal: 32,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 40, 
-  },
-  topSection: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 60,
-  },
-  logoContainer: {
-    width: 84,
-    height: 84,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 32,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.04,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  logoText: {
-    fontSize: 38,
-    fontWeight: '300',
-    color: '#1F2937',
-  },
-  mainTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#111827',
-    letterSpacing: -0.5,
-  },
-  subTitle: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    textAlign: 'center',
-    marginTop: 14,
-    lineHeight: 22,
-  },
-  bottomSection: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  button: {
-    flexDirection: 'row',
-    width: '100%',
-    maxWidth: 340,
-    height: 52,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    marginBottom: 12,
-  },
-  googleButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  googleButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  appleButton: {
-    backgroundColor: '#000000',
-  },
-  appleButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#FFFFFF',
-  },
-  icon: {
-    width: 18,
-    height: 18,
-    resizeMode: 'contain', 
-  },
-  appleIconTint: {
-    tintColor: '#FFFFFF', 
-  },
-  otherLink: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    textDecorationLine: 'underline',
-    marginTop: 24,
-  },
-});
-
-// ==========================================
-// 📱 메인 로그인 화면 컴포넌트
-// ==========================================
 export default function LoginScreen() {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const handleGoogleLogin = (): void => {
-    if (isLoading) return;
-    console.log('Google 로그인 프로세스 시작');
-  };
-
-  const handleAppleLogin = (): void => {
-    if (isLoading) return;
-    console.log('Apple 로그인 프로세스 시작');
-  };
-
-  const handleOtherLoginMethods = (): void => {
-    console.log('기타 소셜 계정 바텀시트 오픈');
-  };
-
   return (
-    <SafeAreaView style={styles.container}>
-      
-      {/* 1. Top Section: 서비스 심플 로고 및 타이틀 영역 */}
-      <View style={styles.topSection}>
-        <View style={styles.logoContainer}>
+    <View style={styles.container}>
+      {/* 상단: 서비스 로고 및 타이틀 */}
+      <View style={styles.logoContainer}>
+        <View style={styles.logoBox}>
           <Text style={styles.logoText}>G</Text>
         </View>
-
-        <Text style={styles.mainTitle}>G_Schedularへようこそ</Text>
-        <Text style={styles.subTitle}>
+        <Text style={styles.title}>G_Schedularへようこそ</Text>
+        <Text style={styles.subtitle}>
           精緻なスケジュール管理で、{"\n"}毎日をデザインしましょう。
         </Text>
       </View>
 
-      {/* 2 & 3. Middle & Bottom Section: 최적화된 소셜 로그인 버튼 군 */}
-      <View style={styles.bottomSection}>
+      {/* 하단: 소셜 로그인 버튼 섹션 */}
+      <View style={styles.buttonContainer}>
         
-        {/* Google 로그인 버튼 */}
-        <TouchableOpacity 
-          style={[styles.button, styles.googleButton]} 
-          onPress={handleGoogleLogin}
-          activeOpacity={0.8}
-          disabled={isLoading}
-        >
-          <Image 
-            source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png' }} 
-            style={styles.icon} 
-          />
-          <Text style={styles.googleButtonText}>Googleで続ける</Text>
+        {/* 1. 구글 로그인 버튼 */}
+        <TouchableOpacity style={styles.googleButton} activeOpacity={0.8}>
+          {/* 절대 좌표로 좌측에 완벽하게 박아두기 */}
+          <View style={styles.absoluteIconLeft}>
+            <Text style={{ color: '#4285F4', fontWeight: 'bold', fontSize: 18 }}>G</Text>
+          </View>
+          {/* 버튼 전체 공간을 다 쓰면서 글자 배치 */}
+          <Text style={styles.googleButtonText}>Google で続ける</Text>
         </TouchableOpacity>
 
-        {/* Apple 로그인 버튼 (iOS 심사 규격 충족) */}
-        <TouchableOpacity 
-          style={[styles.button, styles.appleButton]} 
-          onPress={handleAppleLogin}
-          activeOpacity={0.8}
-          disabled={isLoading}
-        >
-          <Image 
-            source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/18px-Apple_logo_black.svg.png' }} 
-            style={[styles.icon, styles.appleIconTint]} 
-          />
+        {/* 2. 애플 로그인 버튼 */}
+        <TouchableOpacity style={styles.appleButton} activeOpacity={0.8}>
+          {/* 절대 좌표로 좌측에 완벽하게 박아두기 */}
+          <View style={styles.absoluteIconLeft}>
+            <Text style={{ color: '#FFFFFF', fontSize: 16 }}>A</Text>
+          </View>
+          {/* 버튼 전체 공간을 다 쓰면서 글자 배치 */}
           <Text style={styles.appleButtonText}>Appleでサインイン</Text>
         </TouchableOpacity>
 
-        {/* 하단 기타 로그인 진입 링크 */}
-        <TouchableOpacity 
-          onPress={handleOtherLoginMethods} 
-          activeOpacity={0.7}
-        >
-          <Text style={styles.otherLink}>他の方法でログイン</Text>
+        {/* 3. 기타 로그인 */}
+        <TouchableOpacity style={styles.footerButton} activeOpacity={0.6}>
+          <Text style={styles.footerButtonText}>他の方法でログイン</Text>
         </TouchableOpacity>
         
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA', 
+    paddingHorizontal: 24,
+    justifyContent: 'space-between',
+  },
+  logoContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+  },
+  logoBox: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+  },
+  logoText: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#1A1C1E',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1A1C1E',
+    marginBottom: 12,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#8C9196',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  buttonContainer: {
+    marginBottom: 50,
+    gap: 14, 
+  },
+
+  /* ─── 절대 좌표 기반의 안전한 버튼 스타일 ─── */
+  googleButton: {
+    position: 'relative',
+    height: 50, 
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12, 
+    alignItems: 'center',
+    justifyContent: 'center', // 글자를 수직, 수평 완벽하게 중앙 정렬
+    borderWidth: 1,
+    borderColor: '#E2E4E8',
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: '500', 
+    color: '#1F2024',
+    includeFontPadding: false, // 안드로이드 폰트 기본 패딩 억까 방지
+  },
+  
+  appleButton: {
+    position: 'relative',
+    height: 50, 
+    backgroundColor: '#000000',
+    borderRadius: 12, 
+    alignItems: 'center',
+    justifyContent: 'center', // 글자를 수직, 수평 완벽하게 중앙 정렬
+  },
+  appleButtonText: {
+    fontSize: 16,
+    fontWeight: '600', 
+    color: '#FFFFFF',
+    includeFontPadding: false, // 안드로이드 폰트 기본 패딩 억까 방지
+  },
+
+  /* 아이콘을 왼쪽 끝에 완전히 고정시켜서 글자 공간 침해를 제로로 만듦 */
+  absoluteIconLeft: {
+    position: 'absolute',
+    left: 16,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 24,
+  },
+  /* ────────────────────────────────────── */
+
+  footerButton: {
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  footerButtonText: {
+    fontSize: 14,
+    color: '#A0A5AB',
+    textDecorationLine: 'underline',
+  },
+});
