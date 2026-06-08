@@ -6,30 +6,29 @@ import {
   TextInput, 
   TouchableOpacity, 
   FlatList, 
-  SafeAreaView 
+  SafeAreaView,
+  Keyboard // UX 개선을 위한 키보드 API 추가
 } from 'react-native';
 
-// 1. 独立したファイルに分離したAIレイアウトコンポーネントのインポート
 import AIRecommendationSection from '../components/AIRecommendationSection';
 import AIRescheduleModal from '../components/AIRescheduleModal';
 
-// 2. スケジュールデータのインターフェース定義
 interface ScheduleItem {
   id: string;
   title: string;
-  time: string;
-  tags: string[];         // AIが自動分類するタグ配列
-  isAIOptimized: boolean; // AIが配置した最適な時間帯（ゴールデンタイム）かどうか
+  time: string;         // 디테일 수정: 24시간 형식(HH:MM)으로 통일
+  tags: string[];
+  isAIOptimized: boolean;
   isCompleted: boolean;
 }
 
 export default function SchedulerScreen({ navigation }: { navigation?: any }) {
-  // 3. 状態管理 (State)
+  // 3. 状態管理 (State) - 초기 데이터 시간 포맷을 24시간 형식으로 수정
   const [schedules, setSchedules] = useState<ScheduleItem[]>([
     {
       id: '1',
       title: 'デザインミーティング（フィードバック反映）',
-      time: '09:00 AM',
+      time: '09:00',
       tags: ['#外注', '#3Dモデリング'],
       isAIOptimized: true,
       isCompleted: false,
@@ -37,7 +36,7 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
     {
       id: '2',
       title: 'Svelte 5 状態管理手法の学習',
-      time: '11:00 AM',
+      time: '11:00',
       tags: ['#開発勉強', '#ウェブUI'],
       isAIOptimized: true,
       isCompleted: false,
@@ -45,7 +44,7 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
     {
       id: '3',
       title: 'ラオンサーバー パートナーシップ告知作成',
-      time: '02:00 PM',
+      time: '14:00',
       tags: ['#協業', '#企画'],
       isAIOptimized: false,
       isCompleted: false,
@@ -54,7 +53,27 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
 
   const [inputText, setInputText] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [freeTime, setFreeTime] = useState(90); // 擬似的な空き時間状態（分単位）
+  const [freeTime, setFreeTime] = useState(90);
+
+  // 디테일 수정 1: 태그 텍スト별로 고유한 스타일(배경색, 글자색)を 반환하는 헬パー関数
+  const getTagStyle = (tag: string) => {
+    switch (tag) {
+      case '#外注':
+      case '#3Dモデリング':
+        return { bg: '#FFF9E6', text: '#D97706' }; // 따뜻한 옐로우/오렌지 (외주 작업)
+      case '#開発勉強':
+      case '#ウェブUI':
+        return { bg: '#E6F4EA', text: '#137333' }; // 차분한 그린 (성장/공부)
+      case '#協業':
+      case '#企画':
+        return { bg: '#F3E8FF', text: '#6B21A8' }; // 세련된 퍼플 (미팅/협업)
+      case '#休憩':
+      case '#コンディショニング':
+        return { bg: '#FCE7F3', text: '#9D174D' }; // 부드러운 핑크 (휴식)
+      default:
+        return { bg: '#F1F3F5', text: '#495057' }; // 기본 그레이
+    }
+  };
 
   // 4. AIスマートクイック入力ハンドラー
   const handleAISmartInput = () => {
@@ -68,7 +87,7 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
     const newSchedule: ScheduleItem = {
       id: Date.now().toString(),
       title: inputText,
-      time: '04:00 PM', // AIがタイムライン内の最適な空き時間を計算したと仮定
+      time: '16:00', // 24시간 형식으로 입력되도록 수정
       tags: detectedTags,
       isAIOptimized: true,
       isCompleted: false,
@@ -76,14 +95,15 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
 
     setSchedules([...schedules, newSchedule]);
     setInputText('');
+    
+    // 디테일 수정 2: 등록 완료 시 키보드를 자동으로 닫아주는 UX 추가
+    Keyboard.dismiss();
   };
 
-  // 5. AIリスケジュール（再配置）確定処理ハンドラー
   const handleConfirmReschedule = () => {
-    // シミュレーションのため、特定のスケジュール時間を変更する擬似アップデート
     const updatedSchedules = schedules.map(item => {
       if (item.id === '3') {
-        return { ...item, time: '02:30 PM', isAIOptimized: true };
+        return { ...item, time: '14:30', isAIOptimized: true }; // 24시간 형식으로 수정
       }
       return item;
     });
@@ -91,7 +111,6 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
     setIsModalOpen(false);
   };
 
-  // 6. 空き時間おすすめチップ選択時のスケジュール追加ハンドラー
   const handleSelectRecommendAction = (actionTitle: string) => {
     let recommendedTags = ['#おすすめ'];
     if (actionTitle.includes('Svelte')) recommendedTags = ['#開発勉強', '#ウェブUI'];
@@ -101,17 +120,16 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
     const newSchedule: ScheduleItem = {
       id: Date.now().toString(),
       title: actionTitle,
-      time: '12:30 PM', // 空き時間帯にスケジュールをインサート
+      time: '12:30',
       tags: recommendedTags,
       isAIOptimized: true,
       isCompleted: false,
     };
 
     setSchedules([...schedules, newSchedule]);
-    setFreeTime(0); // おすすめタスクを登録したため、空き時間を初期化するシミュレーション
+    setFreeTime(0);
   };
 
-  // 7. 個別のスケジュールカードレンダー関数
   const renderScheduleItem = ({ item }: { item: ScheduleItem }) => (
     <TouchableOpacity 
       style={styles.card}
@@ -136,26 +154,30 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
         <Text style={styles.titleText}>{item.title}</Text>
 
         <View style={styles.tagContainer}>
-          {item.tags.map((tag, index) => (
-            <View key={index} style={styles.tagBadge}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
+          {item.tags.map((tag, index) => {
+            // 디테일 수정 1 반영: 태그별 스타일 매핑
+            const tagStyle = getTagStyle(tag);
+            return (
+              <View 
+                key={index} 
+                style={[styles.tagBadge, { backgroundColor: tagStyle.bg }]}
+              >
+                <Text style={[styles.tagText, { color: tagStyle.text }]}>{tag}</Text>
+              </View>
+            );
+          })}
         </View>
       </View>
     </TouchableOpacity>
   );
 
-  // 8. FlatListの上部に固定されるヘッダーコンポーネント（入力欄＋拡張レイアウトラップ）
   const ListHeader = () => (
     <View>
-      {/* メインタイトルエリア */}
       <View style={styles.headerTitleContainer}>
         <Text style={styles.dateText}>2026年6月15日 (月)</Text>
         <Text style={styles.subDateText}>今日の効率的な動線を確認しましょう。</Text>
       </View>
 
-      {/* AIスマートクイック入力欄 */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -169,7 +191,6 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
         </TouchableOpacity>
       </View>
 
-      {/* 手動 AIタイムライン最適化トリガーボタン */}
       <TouchableOpacity 
         style={styles.optimizeTriggerButton} 
         onPress={() => setIsModalOpen(true)}
@@ -177,7 +198,6 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
         <Text style={styles.optimizeTriggerButtonText}>🔄 AIタイムライン動線を最適化する</Text>
       </TouchableOpacity>
 
-      {/* [レイアウト 1] 空き時間おすすめセクションの統合（条件付きレンダー） */}
       {freeTime > 0 && (
         <AIRecommendationSection 
           freeTimeMinutes={freeTime} 
@@ -185,14 +205,12 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
         />
       )}
 
-      {/* リスト本文のセクションタイトル */}
       <Text style={styles.listSectionTitle}>本日のスケジュール</Text>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* メインリストビュー */}
       <FlatList
         data={schedules}
         keyExtractor={(item) => item.id}
@@ -202,7 +220,6 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* [レイアウト 2] AIリスケジュール確定モダンの統合 */}
       <AIRescheduleModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -212,7 +229,6 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
   );
 }
 
-// スタイルシート定義
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -327,8 +343,8 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: '700', // 가시성을 위해 폰트 굵기 약간 조정
+    color: '#4A4A4A',  // 조금 더 진한 색상으로 변경
   },
   aiBadge: {
     backgroundColor: '#E8F2FF',
@@ -352,7 +368,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   tagBadge: {
-    backgroundColor: '#F1F3F5',
+    // 배경색은 인라인 스타일에서 동的に 주므로 제거
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
@@ -361,7 +377,6 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 12,
-    color: '#495057',
-    fontWeight: '500',
+    fontWeight: '600', // 뱃지 글씨 선명도 업그레이드
   },
 });
