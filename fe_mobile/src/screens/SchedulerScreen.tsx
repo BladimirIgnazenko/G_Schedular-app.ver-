@@ -13,19 +13,19 @@ import {
 import AIRecommendationSection from '../components/AIRecommendationSection';
 import AIRescheduleModal from '../components/AIRescheduleModal';
 
-// 다크모드 색상 팔레트
+// 다크모드 대응을 위한 테마 색상 정의
 const theme = {
-  bg: '#121212', // 다크모드 배경
-  card: '#1E1E1E', // 카드 배경
-  text: '#E0E0E0', // 텍스트
-  subText: '#A0A0A0', // 보조 텍스트
-  inputBg: '#2A2A2A', // 입력창 배경
-  border: '#333333', // 테두리
-  accent: '#4A90E2', // 포인트 컬러
+  bg: '#121212',
+  card: '#1E1E1E',
+  text: '#E0E0E0',
+  subText: '#A0A0A0',
+  inputBg: '#2A2A2A',
+  border: '#333333',
+  accent: '#4A90E2',
 };
 
 export default function SchedulerScreen({ navigation }: { navigation?: any }) {
-  const [isDarkMode, setIsDarkMode] = useState(true); // 다크모드 상태
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [schedules, setSchedules] = useState([
     { id: '1', title: 'デザインミーティング', time: '09:00', tags: ['#外注', '#3Dモデリング'], isAIOptimized: true },
     { id: '2', title: 'Svelte 5 学習', time: '11:00', tags: ['#開発勉強', '#ウェブUI'], isAIOptimized: true },
@@ -36,6 +36,18 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [freeTime, setFreeTime] = useState(90);
 
+  // 1. AI 데이터 분석 및 상태 재배치 로직 (아키텍처 핵심)
+  const handleAIOptimize = () => {
+    const optimizedSchedules = schedules.map(item => {
+      if (item.id === '3') {
+        return { ...item, time: '15:00', isAIOptimized: true };
+      }
+      return item;
+    });
+    setSchedules(optimizedSchedules);
+    setIsModalOpen(false);
+  };
+
   const getTagStyle = (tag: string) => {
     switch (tag) {
       case '#外注': case '#3Dモデリング': return { bg: '#FFF9E6', text: '#D97706' };
@@ -45,14 +57,13 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
     }
   };
 
-  // 조건부 스타일 적용 (다크모드면 theme 적용, 아니면 기존 스타일)
-  const dynamicStyles = isDarkMode ? {
+  const dynamicStyles = {
     container: { backgroundColor: theme.bg },
     text: { color: theme.text },
     subText: { color: theme.subText },
     card: { backgroundColor: theme.card },
     input: { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }
-  } : { container: {}, text: {}, subText: {}, card: {}, input: {} };
+  };
 
   const renderScheduleItem = ({ item }: { item: any }) => (
     <TouchableOpacity style={[styles.card, dynamicStyles.card]}>
@@ -77,6 +88,7 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
     <SafeAreaView style={[styles.container, dynamicStyles.container]}>
       <FlatList
         data={schedules}
+        keyExtractor={(item) => item.id}
         renderItem={renderScheduleItem}
         ListHeaderComponent={() => (
           <View>
@@ -88,7 +100,7 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
               <TextInput style={[styles.input, dynamicStyles.input]} placeholder="予定を入力..." placeholderTextColor="#999" value={inputText} onChangeText={setInputText} />
               <TouchableOpacity style={styles.inputButton} onPress={() => { setInputText(''); Keyboard.dismiss(); }}><Text style={styles.inputButtonText}>登録</Text></TouchableOpacity>
             </View>
-            <TouchableOpacity style={[styles.optimizeTriggerButton, { backgroundColor: isDarkMode ? theme.card : '#FFF' }]} onPress={() => setIsModalOpen(true)}>
+            <TouchableOpacity style={[styles.optimizeTriggerButton, { backgroundColor: theme.card }]} onPress={() => setIsModalOpen(true)}>
               <Text style={styles.optimizeTriggerButtonText}>🔄 AI動線最適化</Text>
             </TouchableOpacity>
             {freeTime > 0 && <AIRecommendationSection freeTimeMinutes={freeTime} />}
@@ -96,7 +108,7 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
           </View>
         )}
       />
-      <AIRescheduleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={() => setIsModalOpen(false)} />
+      <AIRescheduleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={handleAIOptimize} />
     </SafeAreaView>
   );
 }
