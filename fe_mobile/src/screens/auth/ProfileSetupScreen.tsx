@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import ScreenContainer from '../../components/layout/ScreenContainer';
 
-export default function ProfileSetupScreen({ navigation }: { navigation: any }) {
+interface Props {
+  onComplete: () => void;
+}
+
+export default function ProfileSetupScreen({ onComplete }: Props) {
   const [nickname, setNickname] = useState('');
   const [interest, setInterest] = useState('');
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScreenContainer>
       <View style={styles.content}>
         <Text style={styles.title}>プロフィールを作成</Text>
         <Text style={styles.description}>AIスケジューリングのために情報を入力してください。</Text>
@@ -28,17 +33,16 @@ export default function ProfileSetupScreen({ navigation }: { navigation: any }) 
 
         <TouchableOpacity 
           style={styles.button} 
-          onPress={() => navigation.navigate('Scheduler')}
+          onPress={onComplete}
         >
           <Text style={styles.buttonText}>開始する</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#121212' },
   content: { padding: 24, justifyContent: 'center', flex: 1 },
   title: { fontSize: 28, fontWeight: 'bold', color: '#FFF', marginBottom: 12 },
   description: { fontSize: 16, color: '#A0A0A0', marginBottom: 32 },
