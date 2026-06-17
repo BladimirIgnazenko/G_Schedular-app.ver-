@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import ScreenContainer from '../../components/layout/ScreenContainer';
+import { useUser } from '../../context/UserContext';
 
 interface Props {
   onComplete: () => void;
@@ -9,6 +10,12 @@ interface Props {
 export default function ProfileSetupScreen({ onComplete }: Props) {
   const [nickname, setNickname] = useState('');
   const [interest, setInterest] = useState('');
+  const { updateUser } = useUser();
+
+  const handleStart = () => {
+    updateUser({ nickname, interest });
+    onComplete();
+  };
 
   return (
     <ScreenContainer>
@@ -33,7 +40,7 @@ export default function ProfileSetupScreen({ onComplete }: Props) {
 
         <TouchableOpacity 
           style={styles.button} 
-          onPress={onComplete}
+          onPress={handleStart}
         >
           <Text style={styles.buttonText}>開始する</Text>
         </TouchableOpacity>

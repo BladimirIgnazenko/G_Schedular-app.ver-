@@ -6,27 +6,25 @@ import {
   TextInput, 
   TouchableOpacity, 
   FlatList, 
-  SafeAreaView,
   Keyboard 
 } from 'react-native';
 
+import ScreenContainer from '../components/layout/ScreenContainer';
 import AIRecommendationSection from '../components/AIRecommendationSection';
 import AIRescheduleModal from '../components/AIRescheduleModal';
+import { useUser } from '../context/UserContext';
 
-// 다크모드 대응을 위한 테마 색상 정의
-const theme = {
-  bg: '#121212',
-  card: '#1E1E1E',
-  text: '#E0E0E0',
-  subText: '#A0A0A0',
-  inputBg: '#2A2A2A',
-  border: '#333333',
-  accent: '#4A90E2',
-};
+interface ScheduleItem {
+  id: string;
+  title: string;
+  time: string;
+  tags: string[];
+  isAIOptimized: boolean;
+}
 
-export default function SchedulerScreen({ navigation }: { navigation?: any }) {
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [schedules, setSchedules] = useState([
+export default function SchedulerScreen() {
+  const { user } = useUser();
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([
     { id: '1', title: 'デザインミーティング', time: '09:00', tags: ['#外注', '#3Dモデリング'], isAIOptimized: true },
     { id: '2', title: 'Svelte 5 学習', time: '11:00', tags: ['#開発勉強', '#ウェブUI'], isAIOptimized: true },
     { id: '3', title: 'ラオンサーバー告知作成', time: '14:00', tags: ['#協業', '#企画'], isAIOptimized: false },
@@ -34,9 +32,8 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
 
   const [inputText, setInputText] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [freeTime, setFreeTime] = useState(90);
+  const [freeTime] = useState(90);
 
-  // 1. AI 데이터 분석 및 상태 재배치 로직 (아키텍처 핵심)
   const handleAIOptimize = () => {
     const optimizedSchedules = schedules.map(item => {
       if (item.id === '3') {
@@ -57,25 +54,17 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
     }
   };
 
-  const dynamicStyles = {
-    container: { backgroundColor: theme.bg },
-    text: { color: theme.text },
-    subText: { color: theme.subText },
-    card: { backgroundColor: theme.card },
-    input: { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text }
-  };
-
-  const renderScheduleItem = ({ item }: { item: any }) => (
-    <TouchableOpacity style={[styles.card, dynamicStyles.card]}>
+  const renderScheduleItem = ({ item }: { item: ScheduleItem }) => (
+    <TouchableOpacity style={styles.card}>
       <View style={[styles.accentBar, item.isAIOptimized ? styles.aiAccent : styles.defaultAccent]} />
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
-          <Text style={[styles.timeText, dynamicStyles.subText]}>{item.time}</Text>
+          <Text style={styles.timeText}>{item.time}</Text>
           {item.isAIOptimized && <View style={styles.aiBadge}><Text style={styles.aiBadgeText}>✨ AI最適化</Text></View>}
         </View>
-        <Text style={[styles.titleText, dynamicStyles.text]}>{item.title}</Text>
+        <Text style={styles.titleText}>{item.title}</Text>
         <View style={styles.tagContainer}>
-          {item.tags.map((tag: string, i: number) => {
+          {item.tags.map((tag, i) => {
             const s = getTagStyle(tag);
             return <View key={i} style={[styles.tagBadge, { backgroundColor: s.bg }]}><Text style={[styles.tagText, { color: s.text }]}>{tag}</Text></View>;
           })}
@@ -85,7 +74,7 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
   );
 
   return (
-    <SafeAreaView style={[styles.container, dynamicStyles.container]}>
+    <ScreenContainer>
       <FlatList
         data={schedules}
         keyExtractor={(item) => item.id}
@@ -93,48 +82,47 @@ export default function SchedulerScreen({ navigation }: { navigation?: any }) {
         ListHeaderComponent={() => (
           <View>
             <View style={styles.headerTitleContainer}>
-              <Text style={[styles.dateText, dynamicStyles.text]}>2026年6月15日 (月)</Text>
-              <Text style={[styles.subDateText, dynamicStyles.subText]}>今日の効率的な動線を確認しましょう。</Text>
+              <Text style={styles.dateText}>안녕하세요, {user.nickname || '사용자'}님</Text>
+              <Text style={styles.subDateText}>2026년 6월 20일</Text>
             </View>
             <View style={styles.inputContainer}>
-              <TextInput style={[styles.input, dynamicStyles.input]} placeholder="予定を入力..." placeholderTextColor="#999" value={inputText} onChangeText={setInputText} />
+              <TextInput style={styles.input} placeholder="予定を入力..." placeholderTextColor="#999" value={inputText} onChangeText={setInputText} />
               <TouchableOpacity style={styles.inputButton} onPress={() => { setInputText(''); Keyboard.dismiss(); }}><Text style={styles.inputButtonText}>登録</Text></TouchableOpacity>
             </View>
-            <TouchableOpacity style={[styles.optimizeTriggerButton, { backgroundColor: theme.card }]} onPress={() => setIsModalOpen(true)}>
+            <TouchableOpacity style={styles.optimizeTriggerButton} onPress={() => setIsModalOpen(true)}>
               <Text style={styles.optimizeTriggerButtonText}>🔄 AI動線最適化</Text>
             </TouchableOpacity>
             {freeTime > 0 && <AIRecommendationSection freeTimeMinutes={freeTime} />}
-            <Text style={[styles.listSectionTitle, dynamicStyles.text]}>本日のスケジュール</Text>
+            <Text style={styles.listSectionTitle}>本日のスケジュール</Text>
           </View>
         )}
       />
       <AIRescheduleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={handleAIOptimize} />
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   headerTitleContainer: { paddingHorizontal: 20, paddingVertical: 15 },
-  dateText: { fontSize: 24, fontWeight: 'bold' },
-  subDateText: { fontSize: 14, marginTop: 4 },
+  dateText: { fontSize: 24, fontWeight: 'bold', color: '#FFF' },
+  subDateText: { fontSize: 14, marginTop: 4, color: '#A0A0A0' },
   inputContainer: { flexDirection: 'row', paddingHorizontal: 20, marginBottom: 12 },
-  input: { flex: 1, borderRadius: 12, paddingHorizontal: 16, height: 50, borderWidth: 1 },
+  input: { flex: 1, borderRadius: 12, paddingHorizontal: 16, height: 50, borderWidth: 1, backgroundColor: '#2A2A2A', borderColor: '#333', color: '#FFF' },
   inputButton: { backgroundColor: '#4A90E2', borderRadius: 12, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16, marginLeft: 10 },
   inputButtonText: { color: '#FFFFFF', fontWeight: 'bold' },
-  optimizeTriggerButton: { borderWidth: 1, borderColor: '#4A90E2', borderRadius: 12, marginHorizontal: 20, paddingVertical: 12, alignItems: 'center', marginBottom: 16 },
+  optimizeTriggerButton: { borderWidth: 1, borderColor: '#4A90E2', borderRadius: 12, marginHorizontal: 20, paddingVertical: 12, alignItems: 'center', marginBottom: 16, backgroundColor: '#1E1E1E' },
   optimizeTriggerButtonText: { color: '#4A90E2', fontWeight: '700' },
-  listSectionTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 20, marginTop: 8, marginBottom: 12 },
-  card: { borderRadius: 16, marginHorizontal: 20, marginBottom: 12, flexDirection: 'row', overflow: 'hidden' },
+  listSectionTitle: { fontSize: 18, fontWeight: 'bold', paddingHorizontal: 20, marginTop: 8, marginBottom: 12, color: '#FFF' },
+  card: { borderRadius: 16, marginHorizontal: 20, marginBottom: 12, flexDirection: 'row', overflow: 'hidden', backgroundColor: '#1E1E1E' },
   accentBar: { width: 6 },
   aiAccent: { backgroundColor: '#4A90E2' },
   defaultAccent: { backgroundColor: '#AEB6BF' },
   cardContent: { flex: 1, padding: 16 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  timeText: { fontSize: 13, fontWeight: '700' },
+  timeText: { fontSize: 13, fontWeight: '700', color: '#A0A0A0' },
   aiBadge: { backgroundColor: '#E8F2FF', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
   aiBadgeText: { fontSize: 11, color: '#4A90E2', fontWeight: '700' },
-  titleText: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
+  titleText: { fontSize: 16, fontWeight: 'bold', marginBottom: 10, color: '#E0E0E0' },
   tagContainer: { flexDirection: 'row', flexWrap: 'wrap' },
   tagBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginRight: 6 },
   tagText: { fontSize: 12, fontWeight: '600' },

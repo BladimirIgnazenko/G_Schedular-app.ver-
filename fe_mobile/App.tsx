@@ -1,51 +1,29 @@
+import React from 'react';
+import { StatusBar, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { UserProvider } from './src/context/UserContext';
+import AppNavigator from './src/navigation/AppNavigator';
+
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
+ * 프로젝트의 진입점입니다.
+ * 1. SafeAreaProvider: 기기별 노치 및 하단 영역 처리를 위한 설정
+ * 2. UserProvider: 앱 전역 상태 관리 (닉네임, 관심사 등)
+ * 3. AppNavigator: 화면 전환 관리 로직
  */
-
-import React from 'react'; // React import 추가
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-import LoginScreen from './src/screens/auth/LoginScreen'; // 👈 윤선이 로그인 화면 import 추가!
-
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
+export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <UserProvider>
+        {/* 다크모드 기반 앱이므로 light-content 고정 */}
+        <StatusBar barStyle="light-content" backgroundColor="#121212" />
+        
+        {/* 모든 화면 전환은 여기서 관리됨 */}
+        <AppNavigator />
+      </UserProvider>
     </SafeAreaProvider>
   );
 }
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    // 로그인 화면이 기기 노치나 하단 바에 가려지지 않게 패딩(여백) 적용
-    <View style={[
-      styles.container, 
-      { 
-        paddingTop: safeAreaInsets.top, 
-        paddingBottom: safeAreaInsets.bottom 
-      }
-    ]}>
-      {/* 기존 NewAppScreen을 밀어내고 로그인 화면을 배치! */}
-      <LoginScreen /> 
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  // 전역 스타일이 필요하면 여기에 추가
 });
-
-export default App;
