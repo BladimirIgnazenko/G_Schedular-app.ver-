@@ -4,7 +4,7 @@ import React, { createContext, useState, useContext, ReactNode } from 'react';
 interface UserData {
   nickname: string;
   interest: string;
-  healthStatus: 'stable' | 'warning' | 'critical'; // 크론병 관련 상태값 예시
+  healthStatus: 'good' | 'normal' | 'bad'; // 크론병 상태 관리용
 }
 
 interface UserContextType {
@@ -15,14 +15,15 @@ interface UserContextType {
 // 2. Context 생성
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// 3. Provider 컴포넌트 (앱을 감싸줄 껍데기)
+// 3. Provider 컴포넌트
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserData>({
     nickname: '',
     interest: '',
-    healthStatus: 'stable',
+    healthStatus: 'normal', // 기본 상태 설정
   });
 
+  // 상태 업데이트 함수 (부분 업데이트 가능)
   const updateUser = (data: Partial<UserData>) => {
     setUser((prev) => ({ ...prev, ...data }));
   };

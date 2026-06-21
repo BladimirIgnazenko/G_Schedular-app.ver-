@@ -1,33 +1,27 @@
-class Api::V1::SchedulesController < ApplicationController
-
-  def index
-    schedules = Schedule.select(:id, :title, :start_time, :end_time, :category, :priority, :ai_status, :ai_rating)
-    render json: schedules, status: :ok
-  end
-
-
+class Api::V1::UsersController < ApplicationController
+  # 필요시 authenticate_user! 같은 필터 추가
+  
   def show
-    schedule = Schedule.find(params[:id])
-    render json: schedule, status: :ok
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "일정을 찾을 수 없습니다." }, status: :not_found
+    render json: current_user, status: :ok
   end
 
-
-  def create
-    schedule = Schedule.new(schedule_params)
-
-    if schedule.save
-      AnalyzeScheduleJob.perform_later(schedule.id)
-      render json: schedule, status: :created
+  def update
+    if current_user.update(user_params)
+      # 닉네임이나 컨디션이 변경되었을 때 AI가 전체 스케줄을 재평가해야 한다면
+      # 비동기 큐를 트리거할 수 있음
+      if user_params[:health_status].present?
+        # 예: 사용자 상태 변경 시 모든 관련 스케줄 재분석 큐 투입
+        # AnalyzeAllSchedulesJob.perform_later(current_user.id)
+      end
+      render json: current_user, status: :ok
     else
-      render json: { errors: schedule.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: current_user.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   private
 
-  def schedule_params
-    params.require(:schedule).permit(:title, :description, :start_time, :end_time, :category, :priority)
+  def user_params
+    params.require(:user).permit(:nickname, :interest, :health_status)
   end
 end
