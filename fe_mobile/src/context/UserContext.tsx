@@ -1,41 +1,83 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+// fe_mobile/src/context/UserContext.tsx
+import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
+import { fetchUserProfile, updateProfile, UserUpdateParams } from '../api/userApi';
 
-// 1. 사용자 정보 타입 정의
 interface UserData {
-  nickname: string;
-  interest: string;
-  healthStatus: 'good' | 'normal' | 'bad'; // 크론병 상태 관리용
+  nickname?: string;
+  interest?: string;
+  healthStatus?: 'good' | 'normal' | 'bad';
 }
 
 interface UserContextType {
-  user: UserData;
-  updateUser: (data: Partial<UserData>) => void;
+  user: UserData | null;
+  updateUser: (data: UserUpdateParams) => Promise<void>;
+  loading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
-// 2. Context 생성
-const UserContext = createContext<UserContextType | undefined>(undefined);
+export const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// 3. Provider 컴포넌트
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserData>({
-    nickname: '',
-    interest: '',
-    healthStatus: 'normal', // 기본 상태 설정
-  });
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // 상태 업데이트 함수 (부분 업데이트 가능)
-  const updateUser = (data: Partial<UserData>) => {
-    setUser((prev) => ({ ...prev, ...data }));
+  const refreshUser = async () => {
+    try {
+      const data = await fetchUserProfile();
+      setUser(data);
+    } catch (err) {
+      console.error('사용자 정보 로드 실패:', err);
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      await refreshUser();
+      setLoading(false);
+    };
+    init();
+  }, []);
+
+  const updateUser = async (data: UserUpdateParams) => {
+    const previousUser: UserData = user || { 
+      nickname: '', 
+      interest: '', 
+      healthStatus: 'normal' 
+    };
+
+    // 1. 데이터 필터링
+    const filteredData: UserUpdateParams = {};
+    (Object.keys(data) as Array<keyof UserUpdateParams>).forEach((key) => {
+      if (data[key] !== undefined) {
+        filteredData[key] = data[key];
+      }
+    });
+
+    // 2. [핵심 해결] 타입 단언(as UserData)을 통해 병합 결과가 UserData임을 보증
+    const nextUser = {
+      ...previousUser,
+      ...filteredData,
+    } as UserData;
+
+    // 3. 낙관적 업데이트
+    setUser(nextUser);
+
+    try {
+      await updateProfile(filteredData);
+    } catch (err) {
+      console.error('업데이트 실패, 상태 롤백:', err);
+      setUser(previousUser);
+      throw err;
+    }
   };
 
   return (
-    <UserContext.Provider value={{ user, updateUser }}>
+    <UserContext.Provider value={{ user, updateUser, loading, refreshUser }}>
       {children}
     </UserContext.Provider>
   );
 };
 
-// 4. 편리하게 사용하기 위한 커스텀 훅
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
