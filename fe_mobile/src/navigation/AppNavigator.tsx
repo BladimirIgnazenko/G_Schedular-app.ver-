@@ -1,31 +1,43 @@
-import React, { useState } from 'react';
-import LoginScreen from '../screens/auth/LoginScreen';
-import ProfileSetupScreen from '../screens/auth/ProfileSetupScreen';
-import SchedulerScreen from '../screens/SchedulerScreen';
+// fe_mobile/src/navigation/AppNavigator.tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons'; // 아이콘 라이브러리 사용 시
 
-// 화면 타입을 정의해서 관리하면 나중에 화면이 늘어나도 안전해
-export type ScreenType = 'login' | 'profile' | 'scheduler';
+// 스크린 임포트
+import LogWriteScreen from '../screens/LogWriteScreen';
+import LogListScreen from '../screens/LogListScreen';
+import SettingScreen from '../screens/SettingScreen';
+
+const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
-  // 현재 어떤 화면을 보여줄지 결정하는 상태값
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('login');
-
   return (
-    <>
-      {/* 1. 로그인 화면: 성공하면 프로필 설정 화면으로 이동 */}
-      {currentScreen === 'login' && (
-        <LoginScreen onLoginSuccess={() => setCurrentScreen('profile')} />
-      )}
-      
-      {/* 2. 프로필 설정 화면: 완료하면 스케줄러 메인으로 이동 */}
-      {currentScreen === 'profile' && (
-        <ProfileSetupScreen onComplete={() => setCurrentScreen('scheduler')} />
-      )}
-      
-      {/* 3. 메인 스케줄러 화면 */}
-      {currentScreen === 'scheduler' && (
-        <SchedulerScreen />
-      )}
-    </>
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: true, // 헤더 표시 여부
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName: any;
+
+            if (route.name === '기록하기') {
+              iconName = focused ? 'create' : 'create-outline';
+            } else if (route.name === '기록보기') {
+              iconName = focused ? 'list' : 'list-outline';
+            } else if (route.name === '설정') {
+              iconName = focused ? 'settings' : 'settings-outline';
+            }
+
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: 'gray',
+        })}
+      >
+        <Tab.Screen name="기록하기" component={LogWriteScreen} />
+        <Tab.Screen name="기록보기" component={LogListScreen} />
+        <Tab.Screen name="설정" component={SettingScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 }
