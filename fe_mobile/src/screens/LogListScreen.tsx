@@ -1,24 +1,18 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
-// 더미 데이터 (나중에 API 연동 시 삭제)
 const DUMMY_LOGS = [
   { id: '1', painLevel: 2, memo: '죽을 먹었더니 속이 편하다.', category: 'health', created_at: '2026-06-27' },
   { id: '2', painLevel: 5, memo: '갑자기 통증이 심해짐.', category: 'health', created_at: '2026-06-26' },
 ];
 
 export default function LogListScreen() {
-  const [logs, setLogs] = useState(DUMMY_LOGS);
-  const [loading, setLoading] = useState(false);
-
-  useFocusEffect(useCallback(() => {
-    // API 연동 전까지 더미 데이터 사용
-  }, []));
+  const [logs] = useState(DUMMY_LOGS);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>건강 기록 리스트</Text>
+      <Text style={styles.title}>내 건강 기록</Text>
       <FlatList
         data={logs}
         keyExtractor={(item) => item.id}
@@ -40,12 +34,15 @@ export default function LogListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#F8F9FA' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20 },
-  card: { backgroundColor: '#fff', padding: 15, marginBottom: 10, borderRadius: 10, borderWidth: 1, borderColor: '#E2E4E8' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
-  date: { fontSize: 12, color: '#8C9196' },
-  badge: { backgroundColor: '#E1E8ED', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, fontSize: 10, fontWeight: 'bold' },
-  memo: { fontSize: 16, marginVertical: 5 },
-  pain: { fontSize: 14, fontWeight: 'bold' }
+  container: { flex: 1, padding: 16, backgroundColor: '#F0F2F5' },
+  title: { fontSize: 24, fontWeight: '800', marginBottom: 20, color: '#1A1A1A' },
+  card: { 
+    backgroundColor: '#fff', padding: 16, marginBottom: 12, borderRadius: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3
+  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  date: { fontSize: 13, color: '#666' },
+  badge: { backgroundColor: '#E7F3FF', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, fontSize: 11, fontWeight: '700', color: '#007AFF' },
+  memo: { fontSize: 15, color: '#333', lineHeight: 22, marginVertical: 4 },
+  pain: { fontSize: 13, fontWeight: '600' }
 });

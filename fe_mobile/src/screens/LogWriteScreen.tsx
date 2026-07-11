@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { postLog } from '../api/logApi';
 
@@ -15,11 +15,7 @@ export default function LogWriteScreen() {
   const handleSaveLog = async () => {
     setLoading(true);
     try {
-      await postLog({ 
-        painLevel: parseInt(painLevel), 
-        memo, 
-        category: selectedCategory 
-      });
+      await postLog({ painLevel: parseInt(painLevel), memo, category: selectedCategory });
       Alert.alert('저장 완료', '기록되었습니다.');
       setMemo('');
       navigation.navigate('기록보기' as never);
@@ -32,7 +28,7 @@ export default function LogWriteScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>오늘의 기록</Text>
+      <Text style={styles.title}>오늘의 컨디션 기록</Text>
       
       <Text style={styles.label}>통증 정도 (1-5)</Text>
       <TextInput style={styles.input} value={painLevel} onChangeText={setPainLevel} keyboardType="numeric" />
@@ -51,22 +47,28 @@ export default function LogWriteScreen() {
       </View>
 
       <Text style={styles.label}>메모</Text>
-      <TextInput style={styles.memoInput} value={memo} onChangeText={setMemo} multiline placeholder="메모를 입력하세요." />
+      <TextInput style={styles.memoInput} value={memo} onChangeText={setMemo} multiline placeholder="내용을 입력하세요." />
       
-      {loading ? <ActivityIndicator size="small" color="#007AFF" /> : <Button title="기록 저장하기" onPress={handleSaveLog} />}
+      {loading ? <ActivityIndicator size="small" color="#007AFF" /> : (
+        <TouchableOpacity style={styles.saveButton} onPress={handleSaveLog}>
+          <Text style={styles.saveButtonText}>기록 저장하기</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20 },
-  label: { fontSize: 16, marginBottom: 8 },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 20, borderRadius: 5 },
-  memoInput: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 20, borderRadius: 5, height: 100 },
-  categoryContainer: { flexDirection: 'row', marginBottom: 20 },
-  catButton: { padding: 10, borderWidth: 1, borderColor: '#ccc', marginRight: 10, borderRadius: 5 },
+  title: { fontSize: 24, fontWeight: '800', marginBottom: 24, color: '#1A1A1A' },
+  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#555' },
+  input: { borderWidth: 1.5, borderColor: '#E1E4E8', padding: 14, marginBottom: 20, borderRadius: 12, fontSize: 16 },
+  memoInput: { borderWidth: 1.5, borderColor: '#E1E4E8', padding: 14, marginBottom: 24, borderRadius: 12, height: 120, textAlignVertical: 'top', fontSize: 16 },
+  categoryContainer: { flexDirection: 'row', marginBottom: 24 },
+  catButton: { paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1.5, borderColor: '#E1E4E8', marginRight: 10, borderRadius: 12 },
   catSelected: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
-  catText: { color: '#333' },
-  catTextSelected: { color: '#fff', fontWeight: 'bold' }
+  catText: { color: '#666' },
+  catTextSelected: { color: '#fff', fontWeight: 'bold' },
+  saveButton: { backgroundColor: '#007AFF', padding: 16, borderRadius: 12, alignItems: 'center' },
+  saveButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
 });
